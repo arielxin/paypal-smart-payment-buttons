@@ -42,16 +42,27 @@ type OrderOptions = {|
     intent : $Values<typeof INTENT>,
     currency : $Values<typeof CURRENCY>,
     merchantID : $ReadOnlyArray<string>,
-    partnerAttributionID : ?string
+    partnerAttributionID : ?string,
+    buttonLabel: ?string
 |};
 
-export function buildOrderActions({ facilitatorAccessToken, intent, currency, merchantID, partnerAttributionID } : OrderOptions) : OrderActions {
+export function buildOrderActions({ facilitatorAccessToken, intent, currency, merchantID, partnerAttributionID, buttonLabel } : OrderOptions) : OrderActions {
     const create = (data) => {
     
         let order : Object = { ...data };
     
         if (order.intent && order.intent.toLowerCase() !== intent) {
             throw new Error(`Unexpected intent: ${ order.intent } passed to order.create. Please ensure you are passing /sdk/js?${ SDK_QUERY_KEYS.INTENT }=${ order.intent.toLowerCase() } in the paypal script tag.`);
+        }
+
+        if (buttonLabel === 'donate') {
+            if (!order.purchase_units[0].items || order.purchase_units[0].items.length < 1) {
+                throw new Error('items field and item category is required for donate buttons');
+            }
+
+            if (order.purchase_units[0].items[0].category !== 'DONATION') {
+                throw new Error('items should all be of DONATION category for donate button');
+            }
         }
 
         order = { ...order, intent: intent.toUpperCase() };
@@ -140,8 +151,8 @@ export function buildPaymentActions({ facilitatorAccessToken, intent, currency, 
     return { create };
 }
 
-export function buildXCreateOrderActions({ facilitatorAccessToken, intent, currency, merchantID, partnerAttributionID } : OrderOptions) : XCreateOrderActionsType {
-    const order = buildOrderActions({ facilitatorAccessToken, intent, currency, merchantID, partnerAttributionID });
+export function buildXCreateOrderActions({ facilitatorAccessToken, intent, currency, merchantID, partnerAttributionID, buttonLabel } : OrderOptions) : XCreateOrderActionsType {
+    const order = buildOrderActions({ facilitatorAccessToken, intent, currency, merchantID, partnerAttributionID, buttonLabel });
     const payment = buildPaymentActions({ facilitatorAccessToken, intent, currency, merchantID, partnerAttributionID });
 
     return {
@@ -155,12 +166,13 @@ type CreateOrderXProps = {|
     intent : $Values<typeof INTENT>,
     currency : $Values<typeof CURRENCY>,
     merchantID : $ReadOnlyArray<string>,
-    partnerAttributionID : ?string
+    partnerAttributionID : ?string,
+    buttonLabel: ?string
 |};
 
-export function getCreateOrder({ createOrder, intent, currency, merchantID, partnerAttributionID } : CreateOrderXProps, { facilitatorAccessToken, createBillingAgreement, createSubscription } : {| facilitatorAccessToken : string, createBillingAgreement? : ?CreateBillingAgreement, createSubscription? : ?CreateSubscription |}) : CreateOrder {
+export function getCreateOrder({ createOrder, intent, currency, merchantID, partnerAttributionID, buttonLabel } : CreateOrderXProps, { facilitatorAccessToken, createBillingAgreement, createSubscription } : {| facilitatorAccessToken : string, createBillingAgreement? : ?CreateBillingAgreement, createSubscription? : ?CreateSubscription |}) : CreateOrder {
     const data = buildXCreateOrderData();
-    const actions = buildXCreateOrderActions({ facilitatorAccessToken, intent, currency, merchantID, partnerAttributionID });
+    const actions = buildXCreateOrderActions({ facilitatorAccessToken, intent, currency, merchantID, partnerAttributionID, buttonLabel });
 
     return memoize(() => {
         const queryOrderID = getQueryParam('orderID');

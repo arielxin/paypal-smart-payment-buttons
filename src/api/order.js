@@ -47,7 +47,6 @@ export function createOrderID(order : OrderCreateRequest, { facilitatorAccessTok
             [ HEADERS.PARTNER_ATTRIBUTION_ID ]: partnerAttributionID || ''
         }
     }).then((body) : string => {
-
         const orderID = body && body.id;
 
         if (!orderID) {
