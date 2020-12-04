@@ -6,7 +6,7 @@ import { request, noop, memoize } from 'belter/src';
 
 import { SMART_API_URI, ORDERS_API_URL, VALIDATE_PAYMENT_METHOD_API } from '../config';
 import { getLogger } from '../lib';
-import { FPTI_TRANSITION, FPTI_CONTEXT_TYPE, HEADERS, SMART_PAYMENT_BUTTONS, INTEGRATION_ARTIFACT, USER_EXPERIENCE_FLOW, PRODUCT_FLOW } from '../constants';
+import { FPTI_TRANSITION, FPTI_CONTEXT_TYPE, HEADERS, SMART_PAYMENT_BUTTONS, INTEGRATION_ARTIFACT, USER_EXPERIENCE_FLOW, PRODUCT_FLOW, ITEM_CATEGORY } from '../constants';
 
 import { callSmartAPI, callGraphQL, callRestAPI } from './api';
 
@@ -417,7 +417,8 @@ type SupplementalOrderInfo = {|
                     currencyValue : string,
                     currencyCode : string
                 |}
-            |}
+            |},
+            category? : $Values<typeof ITEM_CATEGORY>
         |},
         buyer? : {|
             userId? : string
@@ -455,6 +456,7 @@ export const getSupplementalOrderInfo : GetSupplementalOrderInfo = memoize(order
                                 currencyValue
                             }
                         }
+                        category
                     }
                     flags {
                         isChangeShippingAddressAllowed

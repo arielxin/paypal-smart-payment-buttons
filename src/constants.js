@@ -167,3 +167,13 @@ export const UPGRADE_LSAT_RAMP = {
 export const FRAME_NAME = {
     SMART_FIELDS: 'smart-fields'
 };
+
+export const ITEM_CATEGORY = {
+    DIGITAL:  'DIGITAL',
+    DONATION: 'DONATION',
+    PHYSICAL: 'PHYSICAL'
+};
+
+export const BUTTON_LABEL = {
+    DONATE: 'donate'
+};
